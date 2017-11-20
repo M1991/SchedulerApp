@@ -1,0 +1,215 @@
+﻿@model SchedulerApp.Models.ManageBothViewModel
+@using SchedulerApp.ServicesFilters
+@{
+    ViewBag.Title = "CalendarView";
+}
+
+<script src="~/Scripts/jquery-ui-1.12.1.js"></script>
+<script src="~/Scripts/ACustomScript.js"></script>
+<p></p>
+<hr />
+@using (Html.BeginForm("Create", "Events", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+        @Html.AntiForgeryToken()
+
+        <div class="form-horizontal">
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="row">
+                @Html.LabelFor(model => model.Events.eventId, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @{ AutoUserIncrementer aoc = new AutoUserIncrementer();
+                        @Html.EditorFor(model => model.Events.eventId, new { htmlAttributes = new { @class = "form-control", Value = aoc._incrementer, @readonly = "readonly" } })
+                    }
+
+                    @Html.ValidationMessageFor(model => model.Events.eventId, "", new { @class = "text-danger" })
+                </div>
+                @Html.LabelFor(model => model.Events.title, htmlAttributes: new { @class = "control-label col-md-2", @placeholder = "" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.title, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Events.title, "", new { @class = "text-danger" })
+                </div>
+            </div><br />
+            <div class="row">
+                @Html.LabelFor(m => m.Events.etDept, new { @class = "col-md-2 control-label" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @{
+                        List<SelectListItem> listItemss2 = new List<SelectListItem>();
+                        listItemss2.Add(new SelectListItem
+                        {
+                            Text = "Accounts",
+                            Value = "Accounts"
+                        });
+                        listItemss2.Add(new SelectListItem
+                        {
+                            Text = "Production",
+                            Value = "Production"
+                        });
+                        listItemss2.Add(new SelectListItem
+                        {
+                            Text = "Sales",
+                            Value = "Sales"
+                        });
+                    }
+                    @Html.DropDownListFor(m => m.Events.etDept, new SelectList(listItemss2, "Value", "Text"), new { @class = "form-control" })
+                </div>
+                @Html.LabelFor(model => model.Events.eDesc, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.eDesc, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Events.eDesc, "", new { @class = "text-danger" })
+                </div>
+
+            </div><br />
+            <div class="row">
+
+                @Html.LabelFor(model => model.Events.startt, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.TextBoxFor(model => model.Events.startt, new { @class = "form-control datepicker", id = "from", autocomplete = "off" })
+                    @Html.ValidationMessageFor(model => model.Events.startt, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.LabelFor(model => model.Events.endt, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.endt, new { htmlAttributes = new { @class = "form-control datepicker", id = "to", autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.Events.endt, "", new { @class = "text-danger" })
+                </div>
+
+
+            </div><br />
+            <div class="row">
+                @Html.LabelFor(model => model.Events.startTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.startTime, new { htmlAttributes = new { @class = "form-control timepicker", id = "fromTime" } })
+                    @Html.ValidationMessageFor(model => model.Events.startTime, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.LabelFor(model => model.Events.endTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.endTime, new { htmlAttributes = new { @class = "form-control timepicker", id = "toTime" } })
+                    @Html.ValidationMessageFor(model => model.Events.endTime, "", new { @class = "text-danger" })
+                </div>
+
+                @*
+
+                    @Html.LabelFor(model => model.Events.dtCreated, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-lg-3">
+                        @Html.EditorFor(model => model.Events.dtCreated, new { htmlAttributes = new { @class = "form-control datepicker" } })
+                        @Html.ValidationMessageFor(model => model.Events.dtCreated, "", new { @class = "text-danger" })
+                    </div>
+                *@
+
+            </div><br />
+            <div class="row">
+                @Html.HiddenFor(model => model.Events.allDay, new { Value = "false" })
+                @if (Session["UserDept"] != null)
+                {
+                    if (Session["UserDept"].Equals("Accounts"))
+                    {
+                        @Html.HiddenFor(model => model.Events.color, new { Value = "green" })
+                    }
+                    else if (Session["UserDept"].Equals("Production"))
+                    {
+                        @Html.HiddenFor(model => model.Events.color, new { Value = "blue" })
+                    }
+                    else
+                    {
+                        @Html.HiddenFor(model => model.Events.color, new { Value = "orange" })
+                    }
+                }
+                @Html.HiddenFor(model => model.Events.color, new { Value = "false" })
+
+
+
+                @Html.LabelFor(model => model.Events.trigPerson, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @{
+                        if (Session["UserFname"] != null)
+                        {
+                            @Html.EditorFor(model => model.Events.trigPerson, new { htmlAttributes = new { Value = Session["UserFname"].ToString(), @class = "form-control", @readonly = "readonly" } })
+                        }
+                    }
+                    @Html.ValidationMessageFor(model => model.Events.trigPerson, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.LabelFor(model => model.Events.SONo, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.SONo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Events.SONo, "", new { @class = "text-danger" })
+                </div>
+            </div><br />
+            <div class="row">
+                @Html.LabelFor(model => model.Events.JoNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.JoNo, new { htmlAttributes = new { @class = "form-control", placeholder = "Job Order No. (If any)" } })
+                    @Html.ValidationMessageFor(model => model.Events.JoNo, "", new { @class = "text-danger" })
+                </div>
+                @Html.LabelFor(model => model.Events.nowAtStatn, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.nowAtStatn, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Events.nowAtStatn, "", new { @class = "text-danger" })
+                </div>
+
+            </div><br />
+            <div class="row">
+                @Html.LabelFor(model => model.Events.partNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.partNo, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Events.partNo, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.LabelFor(model => model.Events.comments, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.comments, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Events.comments, "", new { @class = "text-danger" })
+                </div>
+            </div><br />
+            <div class="row">
+
+                   @using (Html.BeginForm("FileUpload", "Events", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                   {
+                    @*       @Html.AntiForgeryToken() *@
+                @Html.LabelFor(model => model.FileUploadModel.soCopyData, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-5 col-sm-8 col-lg-4">
+
+                    @Html.TextBoxFor(model => model.FileUploadModel.soCopyData, "", new { @type = "file", @multiple = "multiple" })
+                    @*  <input type="file" class="" name="soCopy" id="soCopyFile" />
+                        <button type="submit" class="btn btn-default" value="Upload">Upload</button>
+
+                        @Html.TextBoxFor(model => model.files, "", new { @type = "file", @multiple = "multiple" })
+                        @Html.EditorFor(model => model.soCopy, new { htmlAttributes = new { @class = "form-control" } }) *@
+                    @Html.ValidationMessageFor(model => model.FileUploadModel.soCopyData, "", new { @class = "text-danger" })
+                </div>
+                @* <button type="submit" class="btn btn-default" onclick="@("window.location.href = '"+ @Url.Action("FileUpload", "Events")";">Upload</button>
+                    <button type="submit" class="btn btn-default" onclick="@("window.location.href= '" + Url.Action("FileUpload", "Events"); "'")">Upload</button>
+                *@
+                  @*             *@
+                 <div class="col-md-offset-1 col-sm-4 col-lg-2">
+                    <input type="submit" name="action:FileUpload" value="Upload" class="btn btn-default"/>
+                    </div>
+                    }  
+            </div><br />
+            <div class="row">
+                @Html.LabelFor(model => model.Events.dtCreated, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.dtCreated, new { htmlAttributes = new { @class = "form-control datepicker", id = "dtCrtd", autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.Events.dtCreated, "", new { @class = "text-danger" })
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div class="col-md-offset-2 col-sm-6 col-lg-3 col-xs-6">
+                    <input type="reset" value="Reset All" class="btn btn-default" />
+                </div>
+                <div class="col-md-offset-2 col-sm-6 col-lg-3 col-xs-6">
+                    <input type="submit" value="Save Event" class="btn btn-default" onclick="return confirm('Are you sure you want to save this Event?');" />
+                </div>
+            </div>
+        </div>
+                        }
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+@section Scripts {
+                       @Scripts.Render("~/bundles/jqueryval")
+}

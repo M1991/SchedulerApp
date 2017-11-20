@@ -1,0 +1,113 @@
+﻿@model SchedulerApp.Models.RegisterViewModel
+@using SchedulerApp.ServicesFilters
+@{
+    ViewBag.Title = "Register";
+}
+<script type="text/javascript">
+    (function ($) {
+        $(document).ready(function () {
+            //  $("#adminId").attr("disabled", true);
+        });
+        })(jQuery);
+</script>
+<h2>@ViewBag.Title.</h2>
+
+@using (Html.BeginForm("Register", "Account", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+    <h4>Create a new account.</h4>
+    <hr />
+    @Html.ValidationSummary("", new { @class = "text-danger" })
+    <div class="form-group">
+        @Html.LabelFor(m => m.Email, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.UserFname, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.UserFname, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.UserLname, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.TextBoxFor(m => m.UserLname, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.Password, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+        </div>
+    </div>
+    <div class="form-group">
+        @Html.LabelFor(m => m.ConfirmPassword, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+            @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Accesslvl, new { @class = "col-md-2 control-label" })
+        <div class="col-md-10">
+           @* @{
+                List<SelectListItem> listItems2 = new List<SelectListItem>();
+                listItems2.Add(new SelectListItem
+                {
+                    Text = "Accounts",
+                    Value = "Accounts"
+                });
+                listItems2.Add(new SelectListItem
+                {
+                    Text = "Dispatch",
+                    Value = "Dispatch"
+                });               
+                listItems2.Add(new SelectListItem
+                {
+                    Text = "Production",
+                    Value = "Production"
+                });
+                listItems2.Add(new SelectListItem
+                {
+                    Text = "Purchase",
+                    Value = "Purchase"
+                });
+                listItems2.Add(new SelectListItem
+                {
+                    Text = "Sales",
+                    Value = "Sales"
+                });
+                listItems2.Add(new SelectListItem
+                {
+                    Text = "Q.C.",
+                    Value = "QC"
+                });
+            }*@
+            @Html.DropDownListFor(m => m.Accesslvl, (SelectList)ViewBag.Name, new { @class = "form-control" })
+          @*  @Html.DropDownListFor(m => m.Accesslvl, new SelectList(listItems2, "Value", "Text"), new { @class = "form-control" }) *@
+            @{
+                 UserIdGenerator uig = new UserIdGenerator();
+
+              //  if (Session["RegObj"] != null)
+             //   {
+             //       var pno = Session["RegObj"] as UserIdGenerator;
+                @Html.HiddenFor(m =>m.UserID, new { Value=uig.UserIdSender()})
+             //   }
+            }
+        </div>
+    </div>
+      @* @Html.HiddenFor(m => m.LastLogin, new { Value = DateTime.Now } )
+    Html.HiddenFor(m =>m.LastLogin, new { Value=DateTime.Now}) *@
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" class="btn btn-default" value="Register" />
+        </div>
+    </div>
+        }
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

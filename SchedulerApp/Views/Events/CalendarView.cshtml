@@ -1,0 +1,390 @@
+﻿@model SchedulerApp.Models.ManageBothViewModel
+@using SchedulerApp.ServicesFilters
+@{
+    ViewBag.Title = "CalendarView";
+}
+<script src="~/Scripts/ACustomFunctions.js"></script>
+<script src="~/Scripts/jquery-ui-1.12.1.js"></script>
+<script src="~/Scripts/ACustomScript.js"></script>
+<script src="~/Scripts/AAngularCustom.js"></script>
+<p></p>
+@{if (ViewBag.EventStatus.Equals(String.Empty) || (ViewBag.EventStatus == null))
+    {
+        ViewBag.EventStatus = String.Empty;
+    }
+    else
+    {
+    <hr />
+    <h4>Recently added order : @Html.ActionLink("Order", "Details", new { id = ViewBag.EventStatus })</h4>
+    <hr />
+        }
+    }
+@*{ 
+    <script type="text/javascript">
+        function getSoNo() {
+            var nowVar = document.getElementById('iDfsoNo').value;
+            //document.forms.SoNo.value = document.forms.SONo.value;
+            console.log(nowVar);
+            return nowVar;
+          
+        }
+    </script>
+} *@
+<div class="row progTop">
+    <p>
+        <h4> Display Orders for Today: </h4>
+        <h4>   Orders for different stations: </h4>
+    </p>
+</div>
+<hr />
+<div class="row">
+    <div id='calendr'></div>
+    <div style='clear:both'></div>
+</div>
+<div ng-controller="CtrlSoDetails" id="divHtml" style="display:none">
+
+    @using (Html.BeginForm("Create", "Events", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.AntiForgeryToken()
+        <div class="form-horizontal">
+            <hr />
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            <div class="row">                    
+                    @{ AutoUserIncrementer aoc = new AutoUserIncrementer();
+                        @Html.HiddenFor(model => model.Events.eventId, new { Value = aoc._incrementer })
+                    }
+                @Html.LabelFor(model => model.Events.SONo, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.SONo, new { htmlAttributes = new { @class = "form-control", placeholder = "Sales Order Number" } })
+                    @Html.ValidationMessageFor(model => model.Events.SONo, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.LabelFor(model => model.Events.title, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.title, new { htmlAttributes = new { @class = "form-control", placeholder = "Title" } })
+                    @Html.ValidationMessageFor(model => model.Events.title, "", new { @class = "text-danger" })
+                </div>
+            </div><br />
+            @* ADD details of Part no*@
+        
+            <div class="borderRepeat" data-ng-repeat="tbox in tBoxDetails">
+                <br />
+                <div class="row">
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.MultiplePartNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-lg-3">
+                                @Html.TextBoxFor(model => model.SoNoEventds.MultiplePartNo, "", new { @class = "form-control", placeholder = "Part No", data_ng_model = "tbox.partNo" })
+                          
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.MultiplePartQtyNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-lg-3 controls bootstrap-timepicker">
+                            @Html.TextBoxFor(model => model.SoNoEventds.MultiplePartQtyNo, "", new { @class = "form-control", placeholder = "Quantity", data_ng_model = "tbox.proQty" })
+                          
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-default" ng-model="addTBoxModel" ng-click="addTBoxes($index)" style="display:inline;"><span class="glyphicon glyphicon-plus"></span></button>
+                    <button type="button" class="btn btn-default" ng-show="showRemove" ng-click="remTBoxes($index)" style="display:inline;"><span class="glyphicon glyphicon-remove"></span></button>                               
+                </div><br />
+                @*    <div class="input-group">
+                        <div class="input-group-addon">
+                            <i class="glyphicon-hand-down"></i>
+                        </div>
+                        @Html.TextBoxFor(m => m.SoNoEventds.HLength, new { @class = "form-control", @placeholder = "Email Address" })
+                    </div> *@
+                <div class="row">
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.HDia, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-lg-3 controls">
+                            @Html.TextBoxFor(model => model.SoNoEventds.HDia, "", new { @class = "form-control", placeholder = "Diameter", data_ng_model = "tbox.HDia" })
+                            <i class="icon-time"></i>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.HLength, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-lg-3 controls bootstrap-timepicker">
+                            @Html.TextBoxFor(model => model.SoNoEventds.HLength, "", new { @class = "form-control", placeholder = "Length", data_ng_model = "tbox.HLength" })
+                            <i class="icon-time"></i>
+                        </div>
+                    </div>
+                </div><br />
+                <div class="row">
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.Accessr, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-lg-3">
+                            @{
+                                List<SelectListItem> listItems4 = new List<SelectListItem>();
+                              @*  listItems4.Add(new SelectListItem { Text = "None", Value = "None"}); *@
+                                listItems4.Add(new SelectListItem { Text = "Anti Sieze Coating", Value = "Anti Sieze Coating" });
+                                listItems4.Add(new SelectListItem { Text = "Ceramic Bush", Value = "Ceramic Bush" });
+                                listItems4.Add(new SelectListItem { Text = "Ceramic Lead Protection", Value = "Ceramic Lead Protection" });
+                                listItems4.Add(new SelectListItem { Text = "Clamps", Value = "Clamps" });
+                                listItems4.Add(new SelectListItem { Text = "Flange", Value = "Flange" });
+                                listItems4.Add(new SelectListItem { Text = "Ground Wire", Value = "Ground Wire" });
+                                listItems4.Add(new SelectListItem { Text = "Knockout Tab", Value = "Knockout Tab" });
+                                listItems4.Add(new SelectListItem { Text = "Lug Terminals", Value = "Lug Terminals" });
+                                listItems4.Add(new SelectListItem { Text = "Right Angle Block(RBL)", Value = "RBL" });
+                                listItems4.Add(new SelectListItem { Text = "Right Angle Block(RBL) with STR", Value = "RBL STR" });
+                                listItems4.Add(new SelectListItem { Text = "Right Angle Exit (REX)", Value = "REX" });
+                                listItems4.Add(new SelectListItem { Text = "Right Angle Exit (REX) with STR", Value = "REX STR" });
+                                listItems4.Add(new SelectListItem { Text = "Ring", Value = "Ring" });
+                                listItems4.Add(new SelectListItem { Text = "Special Threaded Nut", Value = "Special Threaded Nut" });
+                                listItems4.Add(new SelectListItem { Text = "Special Threaded Screw", Value = "Special Threaded Screw" });
+                                listItems4.Add(new SelectListItem { Text = "Special Threaded Washer", Value = "Special Threaded Washer" });
+                                listItems4.Add(new SelectListItem { Text = "SS Fins", Value = "SS Fins" });
+                                listItems4.Add(new SelectListItem { Text = "Standard BSP Fittings", Value = "Standard BSP Fittings" });
+                                listItems4.Add(new SelectListItem { Text = "Standard NPT Fittings", Value = "Standard NPT Fittings" });
+                                listItems4.Add(new SelectListItem { Text = "Standard Threaded NPT Fittings", Value = "Standard Threaded NPT Fittings" });
+                                listItems4.Add(new SelectListItem { Text = "Standard Threaded BSP Fittings", Value = "Standard Threaded NPT Fittings" });
+                                listItems4.Add(new SelectListItem { Text = "T-Strain", Value = "T-Strain" });
+                                listItems4.Add(new SelectListItem { Text = "Threaded Knockout Tab", Value = "Threaded Knockout Tab" });
+                            }
+                            @* @Html.DropDownListFor(m => m.Events.eDesc, (SelectList)ViewBag.eDesc, new { @class = "form-control" }) *@
+                            @Html.DropDownListFor(m => m.SoNoEventds.Accessr, new SelectList(listItems4, "Value", "Text"), "--Select--", new { @class = "form-control", data_ng_model = "tbox.Accessr" })
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.HCategory, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-lg-3">
+                            @{
+                                List<SelectListItem> listItems5 = new List<SelectListItem>();
+                                listItems5.Add(new SelectListItem { Text = "Cartridge Heater", Value = "Cartridge Heater" });
+                                listItems5.Add(new SelectListItem { Text = "Coil Heater", Value = "Coil Heater" });
+                                listItems5.Add(new SelectListItem { Text = "Tubular Heater", Value = "Tubular Heater" });
+                                listItems5.Add(new SelectListItem { Text = "Thermocouples", Value = "Thermocouples" });
+                                listItems5.Add(new SelectListItem { Text = "Others", Value = "Others" });                                
+                            }
+                            @* @Html.DropDownListFor(m => m.Events.eDesc, (SelectList)ViewBag.eDesc, new { @class = "form-control" }) *@
+                            @Html.DropDownListFor(model => model.SoNoEventds.HCategory, new SelectList(listItems5, "Value", "Text"), "--Select--", new { @class = "form-control", data_ng_model = "tbox.HCategory" })
+                        </div>
+                    </div>
+                </div><br />
+                <div class="row">
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.LeadProtect, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4 col-sm-6 col-lg-3">
+                            @{
+                                List<SelectListItem> listItems2 = new List<SelectListItem>();
+                                listItems2.Add(new SelectListItem { Text = "Armour", Value = "Armour" });
+                                listItems2.Add(new SelectListItem { Text = "Braided Metal Sleeve (BMS)", Value = "BMS" });
+                                listItems2.Add(new SelectListItem { Text = "Fibre Glass (Black Colour)", Value = "Fibre Glass (Black Colour)" });
+                                listItems2.Add(new SelectListItem { Text = "Fibre Glass (Tan Colour)", Value = "Fibre Glass (Tan Colour)" });
+                                listItems2.Add(new SelectListItem { Text = "Silicon Tube", Value = "Silicon Tube" });
+                                listItems2.Add(new SelectListItem { Text = "Spring", Value = "Spring" });
+                                listItems2.Add(new SelectListItem { Text = "Teflon Heat Shrink Sleeve", Value = "Teflon Heat Shrink Sleeve" });
+                            }
+                            @* @Html.DropDownListFor(m => m.Events.eDesc, (SelectList)ViewBag.eDesc, new { @class = "form-control" }) *@
+                            @Html.DropDownListFor(model => model.SoNoEventds.LeadProtect, new SelectList(listItems2, "Value", "Text"), "--Select--", new { @class = "form-control", data_ng_model = "tbox.LeadProtect" })
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.Potting, new { @class = "col-md-2 control-label" })
+                        <div class="col-md-4 col-sm-6 col-lg-3">
+                             @{
+                                 List<SelectListItem> listItems3 = new List<SelectListItem>();
+                                 listItems3.Add(new SelectListItem { Text = "None (Teflon Plug)", Value = "None (Teflon Plug)" });
+                                 listItems3.Add(new SelectListItem { Text = "Ceramic with Sealant", Value = "Ceramic with Sealant" });
+                                 listItems3.Add(new SelectListItem { Text = "Ceramic without Sealant", Value = "Ceramic without Sealant" });
+                                 listItems3.Add(new SelectListItem { Text = "Epoxy 600F", Value = "Epoxy 600F" });
+                                 listItems3.Add(new SelectListItem { Text = "Silicon 500F", Value = "Silicon 500F" });
+                                 listItems3.Add(new SelectListItem { Text = "Silicon 600F", Value = "Silicon 600F" });
+                             }
+                            @* @Html.DropDownListFor(m => m.Events.eDesc, (SelectList)ViewBag.eDesc, new { @class = "form-control" }) *@
+                            @Html.DropDownListFor(model => model.SoNoEventds.Potting, new SelectList(listItems3, "Value", "Text"),"--Select--", new { @class = "form-control", data_ng_model = "tbox.Potting" })
+                        </div>
+                    </div>
+                </div> <br />
+                <div class="row">
+                    <div class="control-group">
+                        @Html.LabelFor(model => model.SoNoEventds.HLLength, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-4 col-sm-6 col-lg-3 controls bootstrap-timepicker">
+                            @Html.TextBoxFor(model => model.SoNoEventds.HLLength, "", new { @class = "form-control", placeholder = "Lead Length", data_ng_model = "tbox.HLLength" })
+                            <i class="icon-time"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+           @* <fieldset class="scheduler-border">
+                <legend class="scheduler-border">Add Part Details</legend>
+                <div class="control-group">
+                    @Html.LabelFor(model => model.Events.partNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-lg-3 controls bootstrap-timepicker">
+                        @Html.EditorFor(model => model.Events.partNo, new { htmlAttributes = new { @class = "form-control", placeholder = "Part No" } })
+                        <i class="icon-time"></i>
+                    </div>
+                </div>
+                <div class="control-group">
+                    @Html.LabelFor(model => model.Events.proQty, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-lg-3 controls bootstrap-timepicker">
+                        @Html.EditorFor(model => model.Events.proQty, new { htmlAttributes = new { @class = "form-control", placeholder = "Quantity" } })
+                        <i class="icon-time"></i>
+                    </div>
+                </div>
+            </fieldset> *@
+            <br />
+            <div class="row">
+                @Html.LabelFor(model => model.Events.proCustomer, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.proCustomer, new { htmlAttributes = new { @class = "form-control", placeholder = "Customer Name" } })              
+                    @{
+                        if (Session["UserFname"] != null)
+                        {
+                            @Html.HiddenFor(model => model.Events.etDept,  new { Value = Session["UserDept"].ToString() })
+                            @Html.HiddenFor(model => model.Events.SoStatus, new { Value="Open"})
+                        }
+                    }
+                    @Html.ValidationMessageFor(model => model.Events.proCustomer, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.LabelFor(model => model.Events.eDesc, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.eDesc, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Events.eDesc, "", new { @class = "text-danger" })
+                </div>
+            </div><br />
+          @*  <div class="row">
+    Empty space for adding extra textboxes
+
+              <Add textboxes if needed>
+
+
+            </div><br /> *@
+            <div class="row">
+                @Html.LabelFor(model => model.Events.startt, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.TextBoxFor(model => model.Events.startt, new { @class = "form-control datepicker", id = "from", autocomplete = "off" })
+                    @Html.ValidationMessageFor(model => model.Events.startt, "", new { @class = "text-danger" })
+                </div>
+                @Html.LabelFor(model => model.Events.endt, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.endt, new { htmlAttributes = new { @class = "form-control datepicker", id = "to", autocomplete = "off" } })
+                    @Html.ValidationMessageFor(model => model.Events.endt, "", new { @class = "text-danger" })
+                </div>
+            </div><br />
+           @* <div class="row">
+                @Html.LabelFor(model => model.Events.startTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.startTime, new { htmlAttributes = new { @class = "form-control timepicker", id = "fromTime" } })
+                    @Html.ValidationMessageFor(model => model.Events.startTime, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.LabelFor(model => model.Events.endTime, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.endTime, new { htmlAttributes = new { @class = "form-control timepicker", id = "toTime" } })
+                    @Html.ValidationMessageFor(model => model.Events.endTime, "", new { @class = "text-danger" })
+                </div>
+                @Html.LabelFor(model => model.Events.dtCreated, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.dtCreated, new { htmlAttributes = new { @class = "form-control datepicker" } })
+                    @Html.ValidationMessageFor(model => model.Events.dtCreated, "", new { @class = "text-danger" })
+                </div>
+            </div><br /> *@
+            <div class="row">
+                @Html.HiddenFor(model => model.Events.allDay, new { Value = "false" })
+                @if (Session["UserDept"] != null)
+                {
+                    //
+                    if (Session["UserDept"].Equals("Accounts"))
+                    {
+                        @Html.HiddenFor(model => model.Events.color, new { Value = "green" })
+                    }
+                    else if (Session["UserDept"].Equals("Production"))
+                    {
+                        @Html.HiddenFor(model => model.Events.color, new { Value = "blue" })
+                    }
+                    else
+                    {
+                        @Html.HiddenFor(model => model.Events.color, new { Value = "orange" })
+                    }
+                }
+              @Html.HiddenFor(model => model.Events.dtCreated, new { Value = DateTime.Now.ToString("yyyy-MM-dd h:m:s") })
+                @{
+                    if (Session["UserFname"] != null)
+                    {
+                        @Html.HiddenFor(model => model.Events.trigPerson, new { Value = Session["UserFname"].ToString() })
+                    }
+                }
+            @*    @Html.LabelFor(model => model.Events.trigPerson, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @{
+                        if (Session["UserFname"] != null)
+                        {
+                            @Html.EditorFor(model => model.Events.trigPerson, new { htmlAttributes = new { Value = Session["UserFname"].ToString(), @class = "form-control", @readonly = "readonly" } })
+                        }
+                    }
+                    @Html.ValidationMessageFor(model => model.Events.trigPerson, "", new { @class = "text-danger" })
+                </div>*@
+
+            @*     @Html.LabelFor(model => model.Events.SONo, htmlAttributes: new { @class = "control-label col-md-2"})
+    <div class="col-md-4 col-sm-6 col-lg-3">
+        @Html.EditorFor(model => model.Events.SONo, new { htmlAttributes = new { @class = "form-control", @id="iDfsoNo"} })
+            @*
+                @Html.HiddenFor(model => model.Events.SoNosEventD[i].SoNo, new { Value = "someVal" })
+            *@
+            
+             @*       <div id="dynamicInput">
+                        Entry 1<br><input type="text" name="myInputs[]">
+                    </div>
+                    <input type="button" value="Add both" onClick="addInput('dynamicInput');">
+
+                @Html.ValidationMessageFor(model => model.Events.SONo, "", new { @class = "text-danger" })
+            </div>
+  @for (int i = 0; i < 1; i++)
+    {
+        @Html.TextBoxFor(x => Model.SoNoEventds.MultiplePartNo[i])  <br />
+        @Html.TextBoxFor(x => Model.SoNoEventds.MultiplePartQtyNo[i])  <br />
+
+    }
+       for(int i=0; i<1; i++)
+        {
+           @Html.TextBoxFor(m => m.SoNoEvents.MultiplePartNo[i], new { htmlAttributes = new { @class = "form-control" } })
+            @Html.TextBoxFor(m => m.SoNoEvents.MultiplePartQtyNo[i], new { htmlAttributes = new { @class = "form-control" } })
+        }*@
+                 
+
+            </div><br />
+            <div class="row">
+                    @Html.LabelFor(model => model.Events.PoNo, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-4 col-sm-6 col-lg-3">
+                        @Html.EditorFor(model => model.Events.PoNo, new { htmlAttributes = new { @class = "form-control", placeholder = "Purchase Order No. (If any)" } })
+                        @Html.ValidationMessageFor(model => model.Events.PoNo, "", new { @class = "text-danger" })
+                    </div>
+                @Html.LabelFor(model => model.Events.nowAtStatn, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">                  
+                    @Html.EditorFor(model => model.Events.nowAtStatn, new { htmlAttributes = new { @class = "form-control" } })                 
+                    @Html.ValidationMessageFor(model => model.Events.nowAtStatn, "", new { @class = "text-danger" })
+                </div>
+
+            </div><br />
+            <div class="row">
+               @Html.LabelFor(model => model.Events.comments, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-4 col-sm-6 col-lg-3">
+                    @Html.EditorFor(model => model.Events.comments, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Events.comments, "", new { @class = "text-danger" })
+                </div>
+
+                @Html.LabelFor(model => model.FileUploadModel.soCopyData, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-5 col-sm-8 col-lg-4">
+                    @Html.TextBoxFor(model => model.FileUploadModel.soCopyData, "", new { @type = "file", @multiple = "multiple" })
+                    @Html.ValidationMessageFor(model => model.FileUploadModel.soCopyData, "", new { @class = "text-danger" })
+                </div>
+            </div><br />         
+            <div class="row">
+                <div class="col-md-offset-2 col-sm-6 col-lg-3 col-xs-6">
+                    <button type="reset" class="btn btn-default" onclick="return confirm('Do you want to reset the form ?');"><span class="glyphicon glyphicon-refresh"></span> Reset All</button>
+                </div>
+                <div class="col-md-offset-2 col-sm-6 col-lg-3 col-xs-6">
+                    <button type="submit" class="btn btn-default" onclick="return confirm('Are you sure you want to save and add this Event to Scheduler ?');"><span class="glyphicon glyphicon-floppy-disk"></span> Save Event</button>
+                </div>
+            </div>
+        </div>
+                                                            }
+
+        </div>
+        <div>
+            @Html.ActionLink("Back to List", "Index")
+        </div>
+        @section Scripts {
+            @Scripts.Render("~/bundles/jqueryval")
+        }

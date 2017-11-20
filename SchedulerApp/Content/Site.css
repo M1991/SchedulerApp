@@ -1,0 +1,97 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea,
+.input-group {
+    max-width: 280px;
+}
+
+.timepicker {
+    
+    list-style: none;
+}
+
+.progTop {
+    background-color: lightgray;
+    border-radius: 11px;
+    padding: 10px 10px 10px 10px;
+}
+
+.tooltip {
+    display: inline-block;
+}
+
+.tooltip .tooltiptext {
+        margin-left: 9px;
+        width: 320px;
+        visibility: hidden;
+        background-color: #FFF;
+        border-radius: 4px;
+        border: 1px solid #aeaeae;
+        position: absolute;
+        z-index: 1;
+        padding: 5px;
+        margin-top: -15px; /* according to application */
+        opacity: 0;
+        transition: opacity 1s;
+    }
+
+.tooltip .tooltiptext::after {
+            content: " ";
+            position: absolute;
+            top: 5%;
+            right: 100%; /* To the left of the tooltip */
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent #aeaeae transparent transparent;
+        }
+
+
+.tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+
+/*
+    NOT IN USE
+fieldset.scheduler-border {
+    border: 1px groove #ddd !important;
+    padding: 0 1.1em 1.4em 1.1em !important;
+    margin: 0 0 1.5em 0 !important;
+    -webkit-box-shadow: 0px 0px 0px 0px #000;
+    box-shadow: 0px 0px 0px 0px #000;
+}
+
+legend.scheduler-border {
+    font-size: 1.1em !important;
+    font-weight: bold !important;
+    text-align: left !important;
+    width: auto;
+    padding: 0 10px;
+    border-bottom: none;
+}
+*/
+
+.borderRepeat {
+    border: 1px solid #E2E1E1;
+    border-radius: 12px;
+}
